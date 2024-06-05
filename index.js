@@ -418,6 +418,7 @@ const newMaze=()=>{
     player = new Player(0, 0,maze);
     agent=null;
     createdFlag=false;
+    interval!=0? clearInterval(interval):null;
     document.getElementById('showGraphBtn').disabled=true;
     document.getElementById('startBtn').disabled=true;
 }
@@ -555,7 +556,7 @@ const Start=()=>{
         }  
         gameEnv.drawMaze();
         player.draw();
-        },120);
+        },100);
     },800)
 
 }
