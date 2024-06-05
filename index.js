@@ -120,6 +120,9 @@
         // Draw start point
         this.ctx.fillStyle = '#00FF0077';
         this.ctx.fillRect(0, 0, this.cellSize, this.cellSize);
+        this.ctx.font = "20px Arial";
+        this.ctx.fillStyle = "black";
+        this.ctx.fillText("Start", 2, 30);
     
         // Draw end point
         this.ctx.fillStyle = '#fbf8a475';
@@ -206,7 +209,7 @@ class Player{
 }
 
 class Agent{
-    constructor(player,alpha, gamma, epsilon){
+    constructor(player,alpha, gamma, epsilon,isDecreas){
         this.player = player;
         this.alpha = alpha;
         this.gamma = gamma;
@@ -219,6 +222,7 @@ class Agent{
         this.episode = 0;
         this.bestEpisode=Infinity;
         this.history = [];
+        this.isDecreas=isDecreas;
 
     }
 
@@ -348,6 +352,7 @@ class Agent{
             }
             this.steps< this.bestEpisode ? this.bestEpisode=this.steps :
             this.episode=episode
+            this.isDecreas?this.epsilon=this.epsilon*0.99:null;
             this.history.push({episode: this.episode, steps: this.steps})
             console.log(`Episode ${this.episode + 1}: agent reached the goal in ${this.steps} steps`);
             // if (episode == numEpisodes - 1) {
@@ -429,18 +434,18 @@ const CreateAgent = ()=>{
     const gamma = parseFloat(document.getElementById('GammaIN').value);
     const epsilon = parseFloat(document.getElementById('EpsilonIN').value);
     const numEpisodes = parseInt(document.getElementById('TrainepisodeIN').value);
+    const isDecreas = document.getElementById('decreaseCreativity').checked;
     agent = new Agent(player,alpha, gamma, epsilon);
+    interval!=0? clearInterval(interval):null;
+
     createdFlag=true;
     document.getElementById('showGraphBtn').disabled=false;
     document.getElementById('startBtn').disabled=false;
-    //$.notify("Agent was create successfully","success");
-
-
-    //$.notify(`Agent finish the train,\n best episode: ${this.bestEpisode} steps `,"success");
     agent.initQtable();
     agent.train(numEpisodes);
     player.reset();
     agent.state = {x: 0, y: 0};
+    gameEnv.drawMaze();
     player.draw();
 
     let strToNote =`Hi I'm an RL agent and ready for action.`
@@ -531,6 +536,7 @@ const Start=()=>{
     )
 
     setTimeout(()=>{
+        agent.steps=0;
         interval = setInterval(() => {
         const action = agent.chooseAction(agent.state);
         const {newState, reward} = agent.step(action);
@@ -538,6 +544,12 @@ const Start=()=>{
         agent.state = newState;
       
         agent.steps++;
+        $('#status').html(`
+        <p>Episode : ${agent.episode+1}</p>
+        <p>Steps : ${agent.steps}</p>
+        <p>Reward : ${reward}</p>
+        <p>Epsilon : ${agent.epsilon.toFixed(4)}</p>
+        `)
         if(agent.isTerminal(agent.state)){
             $('#fireworks').show();
             yummySound.volume = 1;
@@ -552,6 +564,7 @@ const Start=()=>{
             agent.player.reset()  // reset state to starting state
             agent.steps = 0;
             agent.episode++;
+           agent.isDecreas?agent.epsilon=agent.epsilon*0.99:null;
     
         }  
         gameEnv.drawMaze();

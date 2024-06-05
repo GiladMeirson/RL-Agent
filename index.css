@@ -57,6 +57,7 @@ h1{
     font-size: 16px;
     margin-block: 5px;
     cursor: pointer;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
 }
 .btn:hover{
     background-color: #45a049;
@@ -99,12 +100,28 @@ cursor: pointer;
       color: rgb(255, 91, 91);
 }
 
-
+#decreaseCreativity{
+    width: 15px;
+    height: 15px;
+}
+.wrapcheck {
+    display: flex;
+    flex-direction: column;
+    /* margin-block: 5px; */
+    align-items: flex-start;
+}
 
 #fireworks{
     display: none;
 }
 
+#status{
+    position: absolute;
+    top: 5%;
+    right: 15%;
+    font-size: 23px;
+
+}
 
 
 

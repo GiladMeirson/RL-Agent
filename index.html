@@ -30,22 +30,48 @@
             <input type="number" name="AlphaIN" value="0.1" step="0.1" id="AlphaIN">
             <label for="GammaIN">Gamma:</label>
             <input type="number" name="GammaIN" value="0.9" step="0.1" id="GammaIN">
+            <div class="wrapcheck">
+                <label for="">with a decrease in creativity</label>
+                <input type="checkbox" name="decreaseCreativity" checked id="decreaseCreativity">
+            </div>
             <label for="EpsilonIN">Epsilon:</label>
             <input type="number" name="EpsilonIN" value="0.1" step="0.1" id="EpsilonIN">
             <label for="TrainepisodeIN">Skip to episode:</label>
             <input type="number" name="TrainepisodeIN" value="0" id="TrainepisodeIN">
             <br>
-            <button onclick="CreateAgent()" class="btn">Create</button>
+            <button onclick="CreateAgent()" class="btn">Create Agent</button>
             <button onclick="newMaze()" class="btn">New Maze</button>
             <button id="startBtn" disabled onclick="Start()" class="btn">Start</button>
             <button id="showGraphBtn" disabled onclick="showGraph()" class="btn">Show episodes history</button>
         </div>
     </div>
+
+    <div id="status">
+        <p>Episode : 0</p>
+        <p>Steps : 0</p>
+
+
+    </div>
+
+
+
+
+
+
+
+
+
   
     <div id="graphModal">
         <p onclick="closeGraphModal()">X</p>
         <canvas id="graph"></canvas>
     </div>
+
+
+
+
+
+
     <div id="fireworks">
         <div class="firework"></div>
         <div class="firework"></div>
