@@ -435,7 +435,7 @@ const CreateAgent = ()=>{
     const epsilon = parseFloat(document.getElementById('EpsilonIN').value);
     const numEpisodes = parseInt(document.getElementById('TrainepisodeIN').value);
     const isDecreas = document.getElementById('decreaseCreativity').checked;
-    agent = new Agent(player,alpha, gamma, epsilon);
+    agent = new Agent(player,alpha, gamma, epsilon,isDecreas);
     interval!=0? clearInterval(interval):null;
 
     createdFlag=true;
@@ -548,7 +548,7 @@ const Start=()=>{
         <p>Episode : ${agent.episode+1}</p>
         <p>Steps : ${agent.steps}</p>
         <p>Reward : ${reward}</p>
-        <p>Epsilon : ${agent.epsilon.toFixed(4)}</p>
+        <p>Epsilon : ${agent.epsilon.toFixed(8)}</p>
         `)
         if(agent.isTerminal(agent.state)){
             $('#fireworks').show();
