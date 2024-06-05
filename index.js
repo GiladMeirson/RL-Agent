@@ -1,5 +1,6 @@
- canvas = 0
- ctx = 0
+ canvas = 0;
+ ctx = 0;
+ interval = 0;
 
 
  class GameEnv{
@@ -109,12 +110,18 @@
         }
     
         // Draw start point
-        this.ctx.fillStyle = 'green';
+        this.ctx.fillStyle = '#00FF0077';
         this.ctx.fillRect(0, 0, this.cellSize, this.cellSize);
     
         // Draw end point
-        this.ctx.fillStyle = 'red';
+        this.ctx.fillStyle = '#FF000077';
         this.ctx.fillRect((this.gridSize - 1) * this.cellSize, (this.gridSize - 1) * this.cellSize, this.cellSize, this.cellSize);
+        const image = new Image();
+        image.src = './cheese.png'; 
+        image.onload = () => {
+            ctx.drawImage(image, (this.gridSize - 1) * this.cellSize, (this.gridSize - 1) * this.cellSize, this.cellSize, this.cellSize);
+        };
+
     }
 
 
@@ -129,8 +136,14 @@ class Player{
     }
 
     draw(){
-        ctx.fillStyle = 'blue';
-        ctx.fillRect(this.x*this.cellSize, this.y*this.cellSize, this.cellSize, this.cellSize);
+        // ctx.fillStyle = 'blue';
+        // ctx.fillRect(this.x*this.cellSize, this.y*this.cellSize, this.cellSize, this.cellSize);
+
+        const image = new Image();
+        image.src = './player.png'; 
+        image.onload = () => {
+            ctx.drawImage(image, this.x*this.cellSize, this.y*this.cellSize, this.cellSize, this.cellSize);
+        };
     }
 
     move(direction) {
@@ -192,6 +205,7 @@ class Agent{
         this.steps = 0;
         this.numActions = 4;
         this.episode = 0;
+        this.bestEpisode=Infinity;
 
     }
 
@@ -319,9 +333,15 @@ class Agent{
                 this.state = newState;
                 this.steps++;
             }
+            this.steps< this.bestEpisode ? this.bestEpisode=this.steps :
             this.episode=episode
             console.log(`Episode ${this.episode + 1}: agent reached the goal in ${this.steps} steps`);
+            if (episode == numEpisodes - 1) {
+                $.notify(`Agent finish the train,\n best episode: ${this.bestEpisode} steps `,"success");
+            }
         }
+        
+
     }
 
 }
@@ -336,33 +356,33 @@ const init=()=>{
     const maze = gameEnv.createMaze();
     gameEnv.drawMaze();
     player = new Player(0, 0,maze);
-    agent = new Agent(player,0.1, 0.9, 0.1);
-    agent.initQtable();
-    player.draw();
-    agent.train(50000);
+    //agent = new Agent(player,0.1, 0.9, 0.1);
+    //agent.initQtable();
+    //player.draw();
+    //agent.train(50000);
     //console.log(maze);
-    const interval = setInterval(() => {
+    // interval = setInterval(() => {
         
-        const action = agent.chooseAction(agent.state);
-        const {newState, reward} = agent.step(action);
-        agent.learn(reward, agent.state, newState, action);
-        agent.state = newState;
+    //     const action = agent.chooseAction(agent.state);
+    //     const {newState, reward} = agent.step(action);
+    //     agent.learn(reward, agent.state, newState, action);
+    //     agent.state = newState;
       
-        agent.steps++;
-        if(agent.isTerminal(agent.state)){
-            console.log(`Episode ${agent.episode + 1}: agent reached the goal in ${agent.steps} steps`);
-            agent.state = {x: 0, y: 0};
-            agent.player.reset()  // reset state to starting state
-            agent.steps = 0;
-            agent.episode++;
+    //     agent.steps++;
+    //     if(agent.isTerminal(agent.state)){
+    //         console.log(`Episode ${agent.episode + 1}: agent reached the goal in ${agent.steps} steps`);
+    //         agent.state = {x: 0, y: 0};
+    //         agent.player.reset()  // reset state to starting state
+    //         agent.steps = 0;
+    //         agent.episode++;
     
-        }  
+    //     }  
     
     
     
-        gameEnv.drawMaze();
-        player.draw();
-    },250);
+    //     gameEnv.drawMaze();
+    //     player.draw();
+    // },250);
 
 
     addEventListener('keydown', (event) => {
@@ -378,28 +398,55 @@ const init=()=>{
     });
 }
 
-
-
-
-const animate = () => {
-
-    const action = agent.chooseAction(agent.state);
-    const {newState, reward} = agent.step(action);
-    agent.learn(reward, agent.state, newState, action);
-    agent.state = newState;
-    agent.steps++;
-    if(agent.isTerminal(agent.state)){
-        console.log(`Episode ${agent.episode + 1}: agent reached the goal in ${agent.steps} steps`);
-        agent.state = {x: 0, y: 0};
-        agent.player.reset()  // reset state to starting state
-        agent.steps = 0;
-        agent.episode++;
-
-    }  
-
-
-
+const newMaze=()=>{
+    const maze = gameEnv.createMaze();
     gameEnv.drawMaze();
-    player.draw();
-    requestAnimationFrame(animate);
+    player = new Player(0, 0,maze);
 }
+
+
+const CreateAgent = ()=>{
+    const alpha = parseFloat(document.getElementById('AlphaIN').value);
+    const gamma = parseFloat(document.getElementById('GammaIN').value);
+    const epsilon = parseFloat(document.getElementById('EpsilonIN').value);
+    const numEpisodes = parseInt(document.getElementById('TrainepisodeIN').value);
+    agent = new Agent(player,alpha, gamma, epsilon);
+    $.notify("Agent was create successfully","success");
+
+    agent.train(numEpisodes);
+    player.reset();
+    player.draw();
+    
+}
+
+
+
+
+
+const Start=()=>{
+    $.notify("Hello, this is a notification","success");
+}
+
+
+// const animate = () => {
+
+//     const action = agent.chooseAction(agent.state);
+//     const {newState, reward} = agent.step(action);
+//     agent.learn(reward, agent.state, newState, action);
+//     agent.state = newState;
+//     agent.steps++;
+//     if(agent.isTerminal(agent.state)){
+//         console.log(`Episode ${agent.episode + 1}: agent reached the goal in ${agent.steps} steps`);
+//         agent.state = {x: 0, y: 0};
+//         agent.player.reset()  // reset state to starting state
+//         agent.steps = 0;
+//         agent.episode++;
+
+//     }  
+
+
+
+//     gameEnv.drawMaze();
+//     player.draw();
+//     requestAnimationFrame(animate);
+// }
