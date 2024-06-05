@@ -1,6 +1,12 @@
  canvas = 0;
  ctx = 0;
  interval = 0;
+ agent=null;
+ chart=null;
+ yummySound = null;
+
+ createdFlag=false;
+
 
 
  class GameEnv{
@@ -9,6 +15,8 @@
         this.cellSize = 50;
         this.gridSize = 10;
         this.state = 0;
+        this.imageCheese = new Image();
+        this.imageCheese.src = './cheese.png';
 
 
     }
@@ -114,13 +122,14 @@
         this.ctx.fillRect(0, 0, this.cellSize, this.cellSize);
     
         // Draw end point
-        this.ctx.fillStyle = '#FF000077';
+        this.ctx.fillStyle = '#fbf8a475';
         this.ctx.fillRect((this.gridSize - 1) * this.cellSize, (this.gridSize - 1) * this.cellSize, this.cellSize, this.cellSize);
-        const image = new Image();
-        image.src = './cheese.png'; 
-        image.onload = () => {
-            ctx.drawImage(image, (this.gridSize - 1) * this.cellSize, (this.gridSize - 1) * this.cellSize, this.cellSize, this.cellSize);
+
+        this.imageCheese.onload = () => {
+            ctx.drawImage(this.imageCheese, (this.gridSize - 1) * this.cellSize, (this.gridSize - 1) * this.cellSize, this.cellSize, this.cellSize);
         };
+        ctx.drawImage(this.imageCheese, (this.gridSize - 1) * this.cellSize, (this.gridSize - 1) * this.cellSize, this.cellSize, this.cellSize);
+
 
     }
 
@@ -132,18 +141,21 @@ class Player{
         this.x = x;
         this.y = y;
         this.cellSize = 50;
-        this.maze=maze;       
+        this.maze=maze;   
+        this.mouseImage = new Image();
+        this.mouseImage.src = './player.png';    
     }
 
     draw(){
         // ctx.fillStyle = 'blue';
         // ctx.fillRect(this.x*this.cellSize, this.y*this.cellSize, this.cellSize, this.cellSize);
 
-        const image = new Image();
-        image.src = './player.png'; 
-        image.onload = () => {
-            ctx.drawImage(image, this.x*this.cellSize, this.y*this.cellSize, this.cellSize, this.cellSize);
+   
+        this.mouseImage.onload = () => {
+            ctx.drawImage(this.mouseImage, this.x*this.cellSize, this.y*this.cellSize, this.cellSize, this.cellSize);
         };
+        ctx.drawImage(this.mouseImage, this.x*this.cellSize, this.y*this.cellSize, this.cellSize, this.cellSize);
+
     }
 
     move(direction) {
@@ -206,6 +218,7 @@ class Agent{
         this.numActions = 4;
         this.episode = 0;
         this.bestEpisode=Infinity;
+        this.history = [];
 
     }
 
@@ -335,10 +348,11 @@ class Agent{
             }
             this.steps< this.bestEpisode ? this.bestEpisode=this.steps :
             this.episode=episode
+            this.history.push({episode: this.episode, steps: this.steps})
             console.log(`Episode ${this.episode + 1}: agent reached the goal in ${this.steps} steps`);
-            if (episode == numEpisodes - 1) {
-                $.notify(`Agent finish the train,\n best episode: ${this.bestEpisode} steps `,"success");
-            }
+            // if (episode == numEpisodes - 1) {
+            //     $.notify(`Agent finish the train,\n best episode: ${this.bestEpisode} steps `,"success");
+            // }
         }
         
 
@@ -351,7 +365,7 @@ const init=()=>{
     ctx = canvas.getContext('2d');
     canvas.width = 500;
     canvas.height = 500;
-
+    yummySound = document.getElementById('yummy');
     gameEnv = new GameEnv(ctx);
     const maze = gameEnv.createMaze();
     gameEnv.drawMaze();
@@ -402,6 +416,10 @@ const newMaze=()=>{
     const maze = gameEnv.createMaze();
     gameEnv.drawMaze();
     player = new Player(0, 0,maze);
+    agent=null;
+    createdFlag=false;
+    document.getElementById('showGraphBtn').disabled=true;
+    document.getElementById('startBtn').disabled=true;
 }
 
 
@@ -411,20 +429,135 @@ const CreateAgent = ()=>{
     const epsilon = parseFloat(document.getElementById('EpsilonIN').value);
     const numEpisodes = parseInt(document.getElementById('TrainepisodeIN').value);
     agent = new Agent(player,alpha, gamma, epsilon);
-    $.notify("Agent was create successfully","success");
+    createdFlag=true;
+    document.getElementById('showGraphBtn').disabled=false;
+    document.getElementById('startBtn').disabled=false;
+    //$.notify("Agent was create successfully","success");
 
+
+    //$.notify(`Agent finish the train,\n best episode: ${this.bestEpisode} steps `,"success");
+    agent.initQtable();
     agent.train(numEpisodes);
     player.reset();
+    agent.state = {x: 0, y: 0};
     player.draw();
+
+    let strToNote =`Hi I'm an RL agent and ready for action.`
+    numEpisodes==0? strToNote+=` \nI've never trained, so I don't know anything about the environment.` : strToNote+=`\nI trained ${numEpisodes} times, the best result was ${agent.bestEpisode} steps`
+    $("#canvas").notify(
+        strToNote,
+        { 
+            position:"top left",
+            className: 'success',
+        }
+    );
     
 }
 
+const showGraph=()=>{
+    if (agent==null) {
+        $.notify(`You need to create an agent first!`,'error')
+        return;
+    }
+    if (chart!=null) {
+        chart.destroy();
+    }
 
+    let data = agent.history;
+    let labels = data.map((d) => d.episode);
+    let values = data.map((d) => d.steps);
+    let ctx = document.getElementById('graph').getContext('2d');
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Steps to goal',
+                data: values,
+                borderColor: '#9836a5',
+                borderWidth: 1,
+                fill: false,
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: 'black' // change this to the color you want
+                    }
+                },
+                x:{
+                    ticks: {
+                        color: 'black' // change this to the color you want
+                    }
+                }
+            },
+            animations: {
+                tension: {
+                  duration: 1000,
+                  easing: 'linear',
+                  from: 1,
+                  to: 0,
+                  loop: true
+                }
+            },
+        }
+    });
 
+    $('#graphModal').show();
+
+}
+
+const closeGraphModal=()=>{
+    $('#graphModal').hide()
+}
 
 
 const Start=()=>{
-    $.notify("Hello, this is a notification","success");
+    //$.notify("Hello, this is a notification","success");
+
+    if(!createdFlag){
+        $.notify(`You need to create an agent first!`,'error')
+        return;
+    }
+    $("#canvas").notify(
+        `I'm ready, let's find this cheese!`,
+        { 
+            position:"top left",
+            className: 'success',
+        }
+    )
+
+    setTimeout(()=>{
+        interval = setInterval(() => {
+        const action = agent.chooseAction(agent.state);
+        const {newState, reward} = agent.step(action);
+        agent.learn(reward, agent.state, newState, action);
+        agent.state = newState;
+      
+        agent.steps++;
+        if(agent.isTerminal(agent.state)){
+            $('#fireworks').show();
+            yummySound.volume = 1;
+            yummySound.play();
+            setTimeout(()=>{
+                $('#fireworks').hide();
+            },1500)
+        
+            console.log(`Episode ${agent.episode + 1}: agent reached the goal in ${agent.steps} steps`);
+            agent.history.push({episode: agent.episode, steps: agent.steps})
+            agent.state = {x: 0, y: 0};
+            agent.player.reset()  // reset state to starting state
+            agent.steps = 0;
+            agent.episode++;
+    
+        }  
+        gameEnv.drawMaze();
+        player.draw();
+        },120);
+    },800)
+
 }
 
 

@@ -8,70 +8,13 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <link rel="stylesheet" href="./index.css">
     <script src="./index.js"></script>
 
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-        }
-        #canvas {
-            margin-top: 5%;
-        }
-        .wrap {
-            display: flex;
-            flex-direction: column;
-            align-content: center;
-            
-        }
-        .wrap input {
-            border-radius: 5px;
-            font-size: 16px;
-            padding: 2px;
-            width: 50%
-        }
-        .wrap label {
-            font-size: 18px;
-            margin-top: 8px;
-        }
-        #toolsModal{
-            position: absolute;
-            padding: 25px;
-            top: 7%;
-            left: 5%;
-            border: 1px solid black;
-            border-radius: 3%;
-        }
-
-        hr{
-            border: 1px solid black;
-            width: 100%;
-        }
-        h1{
-            margin-block: 2px;
-        }
-
-        .btn{
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 15px 32px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            border-radius: 10px;
-            font-size: 16px;
-            margin-block: 5px;
-            cursor: pointer;
-        }
-
-       
-
-    </style>
+   
+    
 </head>
 <body onload="init()">
 
@@ -94,11 +37,27 @@
             <br>
             <button onclick="CreateAgent()" class="btn">Create</button>
             <button onclick="newMaze()" class="btn">New Maze</button>
-            <button onclick="Start()" class="btn">Start</button>
+            <button id="startBtn" disabled onclick="Start()" class="btn">Start</button>
+            <button id="showGraphBtn" disabled onclick="showGraph()" class="btn">Show episodes history</button>
         </div>
     </div>
   
+    <div id="graphModal">
+        <p onclick="closeGraphModal()">X</p>
+        <canvas id="graph"></canvas>
+    </div>
+    <div id="fireworks">
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
 
+    </div>
+
+    <div style="display: none;">
+        <audio id="yummy" src="./Yummy Sound effect.mp4"></audio>
+    </div>
  
+
+
 </body>
 </html>
