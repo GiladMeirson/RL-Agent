@@ -598,6 +598,118 @@ const Start=()=>{
 
 
 
+async function queryTEXTGen(data) {
+    //https://api-inference.huggingface.co/models/google/gemma-2b
+	const response = await fetch(
+		"https://api-inference.huggingface.co/models/google/gemma-7b",
+		{
+			headers: { Authorization: "Bearer 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",
+            "Content-Type": "application/json"
+            },
+			method: "POST",
+			body: JSON.stringify(data),
+		}
+	);
+	const result = await response.json();
+	return result;
+}
+
+async function queryTEXTGen2(data) {
+	const response = await fetch(
+		"https://api-inference.huggingface.co/models/TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+		{
+			headers: { Authorization: "Bearer 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",
+            "Content-Type": "application/json"
+            },
+			method: "POST",
+			body: JSON.stringify(data),
+		}
+	);
+	const result = await response.json();
+	return result;
+}
+
+
+async function queryTEXTsim(data) {
+	const response = await fetch(
+		"https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2",
+		{
+			headers: { Authorization: "Bearer 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" },
+			method: "POST",
+			body: JSON.stringify(data),
+		}
+	);
+	const result = await response.json();
+	return result;
+}
+
+
+async function queryTEXTclassifiy(data) {
+	const response = await fetch(
+		"https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions",
+		{
+			headers: { Authorization: "Bearer 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" },
+			method: "POST",
+			body: JSON.stringify(data),
+		}
+	);
+	const result = await response.json();
+	return result;
+}
+
+async function queryTEXTtoIMG(data) {
+	const response = await fetch(
+		"https://api-inference.huggingface.co/models/nitrosocke/Arcane-Diffusion",
+		{
+			headers: { Authorization: "Bearer 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" },
+			method: "POST",
+			body: JSON.stringify(data),
+		}
+	);
+	const result = await response.blob();
+	return result;
+}
+
+
+
+const stam=()=>{
+    // queryTEXTGen({"inputs": "Can you please let us know more details about your "}).then((response) => {
+    //     console.log(JSON.stringify(response));
+    // });
+
+    //    queryTEXTGen2({"inputs": "Can you please let us know more details about your "}).then((response) => {
+    //     console.log(JSON.stringify(response));
+    // });
+
+    // queryTEXTsim({"inputs": {
+	// 	"source_sentence": "That is a happy person",
+	// 	"sentences": [
+	// 		"That is a happy dog",
+	// 		"That is a very happy person",
+	// 		"Today is a sunny day",
+    //         "Today i got a new job",
+    //         "I'm very happy",
+    //         "I'm very sad",
+	// 	]
+	// }}).then((response) => {
+	// console.log(JSON.stringify(response));
+    // });
+
+    // queryTEXTclassifiy({"inputs": "I love you"}).then((response) => {
+    //     console.log(JSON.stringify(response));
+    // });
+
+    queryTEXTtoIMG({"inputs": "Astronaut riding a mouse"}).then((response) => {
+        const blob = response;
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.src = url;
+        document.body.appendChild(img);
+    });
+
+}
+
+
 
 
 
