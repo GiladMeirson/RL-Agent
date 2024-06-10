@@ -4,16 +4,18 @@
  agent=null;
  chart=null;
  yummySound = null;
+ gridSize =null;
+ boardSize =500;
 
  createdFlag=false;
 
 
 
  class GameEnv{
-    constructor(ctx){
+    constructor(ctx,gridSize){
         this.ctx = ctx;
-        this.cellSize = 50;
-        this.gridSize = 10;
+        this.cellSize = boardSize/gridSize;
+        this.gridSize = gridSize;
         this.state = 0;
         this.imageCheese = new Image();
         this.imageCheese.src = './cheese.png';
@@ -89,7 +91,7 @@
                 let x = j * this.cellSize;
                 let y = i * this.cellSize;
                 this.ctx.strokeStyle = 'black';
-                this.ctx.lineWidth = 4;
+                this.ctx.lineWidth = 40/this.gridSize;
                 if (cell.top) {
                     this.ctx.beginPath();
                     this.ctx.moveTo(x, y);
@@ -120,7 +122,7 @@
         // Draw start point
         this.ctx.fillStyle = '#00FF0077';
         this.ctx.fillRect(0, 0, this.cellSize, this.cellSize);
-        this.ctx.font = "20px Arial";
+        this.ctx.font = `${this.cellSize *0.4}px Arial`;
         this.ctx.fillStyle = "black";
         this.ctx.fillText("Start", 2, 30);
     
@@ -133,17 +135,17 @@
         };
         ctx.drawImage(this.imageCheese, (this.gridSize - 1) * this.cellSize, (this.gridSize - 1) * this.cellSize, this.cellSize, this.cellSize);
 
-
+        return this.maze
     }
 
 
 }
 
 class Player{
-    constructor(x, y,maze){
+    constructor(x, y,maze,gridSize){
         this.x = x;
         this.y = y;
-        this.cellSize = 50;
+        this.cellSize = boardSize/gridSize;
         this.maze=maze;   
         this.mouseImage = new Image();
         this.mouseImage.src = './player.png';    
@@ -209,14 +211,14 @@ class Player{
 }
 
 class Agent{
-    constructor(player,alpha, gamma, epsilon,isDecreas){
+    constructor(player,alpha, gamma, epsilon,isDecreas,gridSize){
         this.player = player;
         this.alpha = alpha;
         this.gamma = gamma;
         this.epsilon = epsilon;
         this.state={x:0,y:0};
-        this.goal={x:9,y:9};
-        this.gridSize = 10;
+        this.goal={x:gridSize-1,y:gridSize-1};
+        this.gridSize = gridSize;
         this.steps = 0;
         this.numActions = 4;
         this.episode = 0;
@@ -365,16 +367,26 @@ class Agent{
 
 }
 
+const gridSizeChange=(input)=>{
+    gridSize = parseInt(input.value) ;
+    gameEnv.gridSize = gridSize;
+    gameEnv.cellSize = boardSize/gridSize;
+    player.cellSize = boardSize/gridSize;
+    player.maze=gameEnv.createMaze();
+    gameEnv.drawMaze();
+}
+
 const init=()=>{
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
-    canvas.width = 500;
-    canvas.height = 500;
+    canvas.width = boardSize;
+    canvas.height = boardSize;
+    gridSize = parseInt(document.getElementById('gridsizeIN').value);
     yummySound = document.getElementById('yummy');
-    gameEnv = new GameEnv(ctx);
+    gameEnv = new GameEnv(ctx,gridSize);
     const maze = gameEnv.createMaze();
     gameEnv.drawMaze();
-    player = new Player(0, 0,maze);
+    player = new Player(0, 0,maze,gridSize);
     //agent = new Agent(player,0.1, 0.9, 0.1);
     //agent.initQtable();
     //player.draw();
@@ -415,12 +427,14 @@ const init=()=>{
             player.move('right');
         }
     });
+
+
 }
 
 const newMaze=()=>{
     const maze = gameEnv.createMaze();
     gameEnv.drawMaze();
-    player = new Player(0, 0,maze);
+    player = new Player(0, 0,maze,gridSize);
     agent=null;
     createdFlag=false;
     interval!=0? clearInterval(interval):null;
@@ -435,7 +449,8 @@ const CreateAgent = ()=>{
     const epsilon = parseFloat(document.getElementById('EpsilonIN').value);
     const numEpisodes = parseInt(document.getElementById('TrainepisodeIN').value);
     const isDecreas = document.getElementById('decreaseCreativity').checked;
-    agent = new Agent(player,alpha, gamma, epsilon,isDecreas);
+    agent = new Agent(player,alpha, gamma, epsilon,isDecreas,gridSize);
+    player.cellSize=boardSize/gridSize;
     interval!=0? clearInterval(interval):null;
 
     createdFlag=true;
@@ -445,7 +460,9 @@ const CreateAgent = ()=>{
     agent.train(numEpisodes);
     player.reset();
     agent.state = {x: 0, y: 0};
-    gameEnv.drawMaze();
+    gameEnv.cellSize=boardSize/gridSize;
+    gameEnv.gridSize=gridSize;
+    player.maze=gameEnv.drawMaze();
     player.draw();
 
     let strToNote =`Hi I'm an RL agent and ready for action.`
@@ -535,6 +552,10 @@ const Start=()=>{
         }
     )
 
+    console.log('agent: ',agent);
+    console.log('player: ',player);
+    console.log('gameEnv: ',gameEnv);
+
     setTimeout(()=>{
         agent.steps=0;
         interval = setInterval(() => {
@@ -573,6 +594,14 @@ const Start=()=>{
     },800)
 
 }
+
+
+
+
+
+
+
+
 
 
 // const animate = () => {
